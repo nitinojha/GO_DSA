@@ -3,10 +3,11 @@ package main
 import (
 	"fmt"
 	"sort"
+	"strings"
 )
 
 func main() {
-	nums := []int{-1, 0, -1, -2, 1, 1, 0, 2}
+	nums := []int{1, -2, -5, -13, -10, -11, 0, -12, -11, 13, -4, 9, 8, 10, -7, 3, -9, -12, -7, 8, -2, -12, 1, -10, -15, -8, 5, 14, -7, -8, -8, 9, -3, -6, 3, -5, -1, -11, -10, 3, -13, 1, -10, 3, -12, -10, -9, -13, -7, -1, 10, 6, -6, -12, 12, -13, -13, -6, -14, -13, -7, -7, 4, 6, -6, -8, 8, 8, -4, 13, -11, -1, -8, -14, 9, -5, -9, 7, -3, -1, 14, 14, 13, -7, 9, 2, -5, 12, 11, -12, 14, -11, -12, 3, 2, -2, 3, -5, -9, 14, -14, -13, -10, -7, -12, 14, 3, -6, -1, 8, 1, -2, -1, -1, 6, -6}
 
 	result := threeSum(nums)
 	fmt.Println(result)
@@ -20,31 +21,85 @@ func threeSum(nums []int) [][]int {
 	var result [][]int
 	//sum := 0
 	sort.Ints(nums)
+	var zero_temp int
+	for i := 0; i < len(nums)-2; i++ {
+		l := i + 1
+		r := len(nums) - 1
+		//fmt.Println(i, l, r)
+		for l < r {
+			if nums[i] == int(0) && nums[l] == int(0) && nums[r] == int(0) {
+				zero_temp = 1
+				break
+			}
+			sum := nums[i] + nums[l] + nums[r]
+			if sum == 0 {
 
-	j := 1
-	k := len(nums) - 1
-	for i := 0; i < k && j < k; {
-		if nums[i]+nums[j]+nums[k] == 0 {
-			flag := true
-			for l, _ := range result {
-				if (result[l][0] == nums[i]) && (result[l][1] == nums[j]) && (result[l][2] == nums[k]) {
-					flag = false
-					break
-				}
+				new_triplet := []int{nums[i], nums[l], nums[r]}
+				// response := VerifyUniqueTriplets(result, new_triplet)
+				// if response {
+				// 	result = append(result, new_triplet)
+				// }
+				result = append(result, new_triplet)
+
+				l++
+				r--
+			} else if sum < 0 {
+				l++
+			} else {
+				r--
 			}
-			if flag {
-				result = append(result, []int{nums[i], nums[j], nums[k]})
-			}
-			i++
-			j++
-		} else if nums[i]+nums[j]+nums[k] < 0 {
-			i++
-			j++
-		} else {
-			k--
+		}
+
+	}
+	if zero_temp == 1 {
+		result = append(result, []int{0, 0, 0})
+	}
+	result = findUniqueTriplets(result)
+	return result
+}
+
+func findUniqueTriplets(arr [][]int) [][]int {
+	uniqueMap := make(map[string]struct{})
+	var result [][]int
+
+	for _, triplet := range arr {
+		// Sort the triplet to handle permutations
+		sort.Ints(triplet)
+
+		// Convert triplet to a string key
+		key := strings.Join(strings.Fields(fmt.Sprint(triplet)), ",")
+
+		// Check if triplet is already seen
+		if _, exists := uniqueMap[key]; !exists {
+			uniqueMap[key] = struct{}{}
+			result = append(result, triplet)
 		}
 	}
 	return result
+}
+
+func VerifyUniqueTriplets(result [][]int, new_triplet []int) bool {
+	//uniqueMap := make(map[string]struct{})
+	sort.Ints(new_triplet)
+	new_triplet_key := strings.Join(strings.Fields(fmt.Sprint(new_triplet)), ",")
+
+	for _, triplet := range result {
+		// Sort the triplet to handle permutations
+		sort.Ints(triplet)
+
+		// Convert triplet to a string key
+		key := strings.Join(strings.Fields(fmt.Sprint(triplet)), ",")
+		if key == new_triplet_key {
+			return false
+		}
+
+		// Check if triplet is already seen
+		// if _, exists := uniqueMap[key]; !exists {
+		// 	uniqueMap[key] = struct{}{}
+		// 	result = append(result, triplet)
+		// }
+	}
+	return true
 }
 
 // My previous logic submission with O(n3)
